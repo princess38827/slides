@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.005' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            --bg-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.08'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
             --bg-gradient: radial-gradient(ellipse at 20% 80%, rgba(40, 45, 60, 0.5) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(30, 40, 50, 0.5) 0%, transparent 50%);
             --bg-color: #0a0b10;
         }
@@ -255,6 +255,25 @@
         }
         #ai-prompt::placeholder { color: rgba(255,255,255,0.6); }
 
+        #gemini-key {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: white;
+            outline: none;
+            width: 180px;
+            font-family: inherit;
+        }
+        #gemini-key::placeholder { color: rgba(255,255,255,0.6); }
+
+        #toolbar-status {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            min-width: 180px;
+            text-align: center;
+        }
+
         .loading-spinner {
             width: 24px;
             height: 24px;
@@ -327,10 +346,11 @@
             
             <!-- AI Features -->
             <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
-            
+            <input type="password" id="gemini-key" placeholder="Gemini API key">
             <input type="text" id="ai-prompt" placeholder="Image prompt...">
             <div class="btn" onclick="generateImage()">🖼️ Gen Image</div>
             <div class="btn" onclick="generateAnimation()">🎬 Gen 6s Anim</div>
+            <div id="toolbar-status">AI features require a valid Gemini key.</div>
         </div>
 
     </div>
@@ -341,6 +361,17 @@
         let zIndexCounter = 10;
         let draggedPanel = null;
         let offsetX = 0, offsetY = 0;
+
+        function setToolbarStatus(message, isError = false) {
+            const statusEl = document.getElementById('toolbar-status');
+            if (!statusEl) return;
+            statusEl.textContent = message;
+            statusEl.style.color = isError ? 'rgba(255, 120, 120, 0.95)' : 'rgba(255,255,255,0.8)';
+        }
+
+        function getGeminiApiKey() {
+            return document.getElementById('gemini-key')?.value.trim() || '';
+        }
 
         // --- Unlock Logic ---
         const slider = document.getElementById('unlock-slider');
@@ -532,7 +563,7 @@
             const svgContent = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
                     <foreignObject width="100%" height="100%">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; margin: 0; background-color: #0a0b10; background-image: radial-gradient(ellipse at 20% 80%, rgba(40, 45, 60, 0.5) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(30, 40, 50, 0.5) 0%, transparent 50%), url('data:image/svg+xml,%3Csvg viewBox=\\'0 0 1000 1000\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'noiseFilter\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.005\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23noiseFilter)\\' opacity=\\'0.08\\'/%3E%3C/svg%3E'); background-size: cover; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; margin: 0; background-color: #0a0b10; background-image: radial-gradient(ellipse at 20% 80%, rgba(40, 45, 60, 0.5) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(30, 40, 50, 0.5) 0%, transparent 50%);">
                             <style>${style}</style>
                             <div class="glass-panel" style="position: relative; width: 100%; height: 100%; border-radius: 40px; box-sizing: border-box; overflow: hidden;">
                                 ${cleanHTML}
@@ -577,11 +608,16 @@
             });
         });
 
-        // --- AI Generation Logic (Gemini 3.1 & TTS) ---
-        
+        // --- AI Generation Logic (Gemini 2.0/2.5) ---
         async function generateImage() {
             const promptInput = document.getElementById('ai-prompt');
             const prompt = promptInput.value.trim() || 'A beautiful abstract pyrex glass sculpture';
+            const apiKey = getGeminiApiKey();
+
+            if (!apiKey) {
+                setToolbarStatus('Add a Gemini API key to enable image generation.', true);
+                return;
+            }
             
             // Create a loading pane
             const board = document.getElementById('board');
@@ -602,23 +638,28 @@
                     contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
                 };
-                const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent?key=';
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result?.error?.message || 'Image generation failed.');
+                }
                 const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
                 if (base64Data) {
                     newPanel.querySelector('.draw-area').innerHTML = ''; // clear spinner
                     newPanel.querySelector('.draw-area').style.background = `url('data:image/png;base64,${base64Data}') center/cover`;
+                    setToolbarStatus('Image generated successfully.');
                 } else {
-                    throw new Error("No image data");
+                    throw new Error('No image data was returned.');
                 }
             } catch (e) {
                 console.error(e);
                 newPanel.querySelector('.draw-area').innerHTML = '<div style="padding: 20px; text-align: center; font-size:14px;">Error generating image.</div>';
+                setToolbarStatus(e.message || 'Image generation failed.', true);
             }
         }
 
@@ -669,6 +710,12 @@
         }
 
         async function generateAnimation() {
+            const apiKey = getGeminiApiKey();
+            if (!apiKey) {
+                setToolbarStatus('Add a Gemini API key to enable audio animation.', true);
+                return;
+            }
+
             const board = document.getElementById('board');
             const newPanel = document.createElement('div');
             newPanel.className = 'panel glass-panel';
@@ -686,18 +733,20 @@
                 const payload = {
                     contents: [{ parts: [{ text: "Say enthusiastically: Creating your dynamic six second pyrex canvas animation sequence!" }] }],
                     generationConfig: {
-                        responseModalities: ["AUDIO"],
-                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } } }
-                    },
-                    model: "gemini-2.5-flash-preview-tts"
+                        responseModalities: ['AUDIO'],
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } } }
+                    }
                 };
-                const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=';
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result?.error?.message || 'Audio generation failed.');
+                }
                 const part = result?.candidates?.[0]?.content?.parts?.[0];
                 const audioData = part?.inlineData?.data;
                 const mimeType = part?.inlineData?.mimeType;
@@ -718,6 +767,7 @@
                     `;
                     
                     audio.play();
+                    setToolbarStatus('Animation audio started.');
                     
                     setTimeout(() => {
                         newPanel.querySelector('.draw-area').innerHTML = `
@@ -728,11 +778,12 @@
                     }, 6000); // 6 second animation end state
 
                 } else {
-                    throw new Error("No audio data");
+                    throw new Error('No audio data was returned.');
                 }
             } catch (e) {
                 console.error(e);
                 newPanel.querySelector('.draw-area').innerHTML = '<div style="padding: 20px; text-align: center; font-size: 14px;">Error generating animation.</div>';
+                setToolbarStatus(e.message || 'Animation generation failed.', true);
             }
         }
     </script>
