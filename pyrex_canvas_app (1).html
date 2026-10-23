@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pyrex Glass Canvas App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.005' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            --bg-gradient: radial-gradient(ellipse at 20% 80%, rgba(40, 45, 60, 0.5) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(30, 40, 50, 0.5) 0%, transparent 50%);
+            --bg-color: #0a0b10;
+        }
+
+        body { 
+            margin: 0; 
+            background-color: var(--bg-color);
+            background-image: var(--bg-gradient), var(--bg-noise);
+            background-size: cover;
+            background-attachment: fixed;
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            touch-action: none; /* Prevent scroll on touch devices */
+        }
+
+        .screen { 
+            position: absolute; 
+            inset: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            flex-direction: column; 
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s; 
+        }
+
+        /* The Pyrex Glass Aesthetic */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            
+            /* Refractive thick borders */
+            border-radius: 32px; /* Highly rounded Pyrex style */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid rgba(255, 255, 255, 0.75);
+            border-left: 2px solid rgba(255, 255, 255, 0.5);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            
+            /* Depth shadows and chromatic aberration for thick glass */
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.6), 
+                inset 0 4px 8px rgba(255, 255, 255, 0.5), 
+                inset 4px 4px 10px rgba(0, 255, 255, 0.15), 
+                inset -4px -4px 10px rgba(255, 0, 255, 0.15); 
+            
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        /* Lock Screen */
+        #lock-screen {
+            z-index: 20;
+            inset: auto;
+            width: 340px;
+            padding: 50px 40px;
+            border-radius: 32px;
+        }
+        #lock-screen h2 { margin-top: 0; font-weight: 400; text-align: center; letter-spacing: 1px; }
+        #lock-screen p { opacity: 0.6; font-size: 13px; margin-bottom: 40px; text-align: center; letter-spacing: 0.5px; }
+        
+        #unlock-slider { 
+            width: 100%; 
+            accent-color: #fff; 
+            cursor: pointer;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            appearance: none;
+            outline: none;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.2);
+        }
+        #unlock-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255,255,255,0.9);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .slide-out { 
+            transform: translateY(-150%) scale(0.9); 
+            opacity: 0; 
+            pointer-events: none; 
+        }
+
+        /* Main Board - The Glass Background */
+        #main-screen {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+            z-index: 10;
+        }
+        #main-screen.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+        }
+
+        /* The overall glass background board */
+        #board { 
+            position: absolute;
+            inset: 20px; /* Leave a gap to see the fluid background behind the glass */
+            border-radius: 40px;
+            padding: 0; 
+            overflow: hidden;
+        }
+
+        /* Draggable Pyrex Panes */
+        .panel { 
+            position: absolute; 
+            width: 300px; 
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            user-select: none;
+            transition: transform 0.1s ease-out;
+        }
+        
+        .panel:active {
+            transform: scale(1.02);
+            box-shadow: 
+                0 40px 80px rgba(0, 0, 0, 0.8), 
+                inset 0 4px 8px rgba(255, 255, 255, 0.7),
+                inset 4px 4px 10px rgba(0, 255, 255, 0.2),
+                inset -4px -4px 10px rgba(255, 0, 255, 0.2);
+        }
+
+        /* Drag Handle to separate dragging from drawing */
+        .drag-handle {
+            width: 60px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            margin: 0 auto 12px auto;
+            cursor: grab;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        /* Drawing Canvas Area */
+        .draw-area {
+            flex-grow: 1;
+            width: 100%;
+            position: relative;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.05); /* Slight tint to show canvas bounds */
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            display: block;
+            touch-action: none;
+        }
+
+        /* Toolbar Styling */
+        .toolbar {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            z-index: 100;
+            padding: 16px 24px;
+            align-items: center;
+            justify-content: center;
+            width: max-content;
+            max-width: 95vw;
+        }
+        
+        .toolbar .btn {
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            user-select: none;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-top: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .toolbar .btn:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Color Picker Swatches */
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin: 0 10px;
+            border-left: 1px solid rgba(255,255,255,0.2);
+            border-right: 1px solid rgba(255,255,255,0.2);
+            padding: 0 20px;
+        }
+
+        .swatch {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.5);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        .swatch.active {
+            transform: scale(1.2);
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.8);
+        }
+
+        /* AI Features UI */
+        #ai-prompt {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: white;
+            outline: none;
+            font-family: inherit;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            width: 160px;
+            transition: width 0.3s;
+        }
+        #ai-prompt:focus {
+            width: 220px;
+            border-color: rgba(255,255,255,0.5);
+        }
+        #ai-prompt::placeholder { color: rgba(255,255,255,0.6); }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .anim-container {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(45deg, #ff4757, #1e90ff, #ffa502, #2ed573);
+            background-size: 300% 300%;
+            animation: gradientPulse 3s ease-in-out infinite alternate;
+            border-radius: 20px;
+        }
+        @keyframes gradientPulse { 0% {background-position: 0% 50%;} 100% {background-position: 100% 50%;} }
+
+    </style>
+</head>
+<body>
+
+    <!-- Lock Screen -->
+    <div id="lock-screen" class="screen glass-panel">
+        <h2>Pyrex Canvas</h2>
+        <p>Slide to unlock workspace</p>
+        <input type="range" id="unlock-slider" min="0" max="100" value="0">
+    </div>
+
+    <!-- Main Workspace -->
+    <div id="main-screen" class="screen">
+        
+        <!-- The Glass Background Board -->
+        <div id="board" class="glass-panel">
+            
+            <!-- Default Draggable Pyrex Pane 1 -->
+            <div class="panel glass-panel" style="top: 20%; left: 20%;" id="panel-1">
+                <div class="drag-handle"></div>
+                <div class="draw-area">
+                    <canvas></canvas>
+                </div>
+            </div>
+
+            <!-- Default Draggable Pyrex Pane 2 -->
+            <div class="panel glass-panel" style="top: 40%; left: 50%;" id="panel-2">
+                <div class="drag-handle"></div>
+                <div class="draw-area">
+                    <canvas></canvas>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Glass Toolbar -->
+        <div class="toolbar glass-panel" style="border-radius: 40px;">
+            <div class="btn" onclick="addSlab()">+ Add Pane</div>
+            
+            <div class="color-picker">
+                <div class="swatch active" style="background: #ffffff;" onclick="setColor(this, '#ffffff')"></div>
+                <div class="swatch" style="background: #ff4757;" onclick="setColor(this, '#ff4757')"></div>
+                <div class="swatch" style="background: #1e90ff;" onclick="setColor(this, '#1e90ff')"></div>
+                <div class="swatch" style="background: #2ed573;" onclick="setColor(this, '#2ed573')"></div>
+                <div class="swatch" style="background: #ffa502;" onclick="setColor(this, '#ffa502')"></div>
+                <div class="swatch" style="background: #2f3542;" onclick="setColor(this, '#2f3542')"></div>
+            </div>
+
+            <div class="btn" onclick="clearAllCanvases()">Clear All</div>
+            <div class="btn" onclick="exportSVG()">Save SVG</div>
+            
+            <!-- AI Features -->
+            <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
+            
+            <input type="text" id="ai-prompt" placeholder="Image prompt...">
+            <div class="btn" onclick="generateImage()">🖼️ Gen Image</div>
+            <div class="btn" onclick="generateAnimation()">🎬 Gen 6s Anim</div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Initialization ---
+        let currentPaintColor = '#ffffff';
+        let zIndexCounter = 10;
+        let draggedPanel = null;
+        let offsetX = 0, offsetY = 0;
+
+        // --- Unlock Logic ---
+        const slider = document.getElementById('unlock-slider');
+        const lockScreen = document.getElementById('lock-screen');
+        const mainScreen = document.getElementById('main-screen');
+
+        slider.addEventListener('input', (e) => {
+            if (e.target.value >= 95) {
+                lockScreen.classList.add('slide-out');
+                mainScreen.classList.add('active');
+                // Initialize canvases once they are visible to get correct dimensions
+                setTimeout(initAllCanvases, 100); 
+            }
+        });
+
+        slider.addEventListener('change', (e) => {
+            if (e.target.value < 95) slider.value = 0;
+        });
+
+        // --- Dragging Logic ---
+        document.addEventListener('pointerdown', (e) => {
+            if (e.target.classList.contains('drag-handle')) {
+                const panel = e.target.closest('.panel');
+                draggedPanel = panel;
+                const rect = panel.getBoundingClientRect();
+                
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                
+                zIndexCounter++;
+                panel.style.zIndex = zIndexCounter;
+                e.target.setPointerCapture(e.pointerId);
+            }
+        });
+
+        document.addEventListener('pointermove', (e) => {
+            if (!draggedPanel) return;
+            
+            const board = document.getElementById('board');
+            const boardRect = board.getBoundingClientRect();
+            
+            let newX = e.clientX - boardRect.left - offsetX;
+            let newY = e.clientY - boardRect.top - offsetY;
+
+            // Keep within bounds
+            newX = Math.max(0, Math.min(newX, boardRect.width - draggedPanel.offsetWidth));
+            newY = Math.max(0, Math.min(newY, boardRect.height - draggedPanel.offsetHeight));
+
+            draggedPanel.style.left = newX + 'px';
+            draggedPanel.style.top = newY + 'px';
+        });
+
+        document.addEventListener('pointerup', () => {
+            draggedPanel = null;
+        });
+
+        // --- Canvas Drawing Logic ---
+        function setupCanvas(canvas) {
+            // Set actual canvas resolution to match CSS display size
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 4;
+
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+
+            canvas.addEventListener('pointerdown', (e) => {
+                isDrawing = true;
+                const pos = getPos(e);
+                lastX = pos.x;
+                lastY = pos.y;
+                // Bring panel to front when drawing
+                const panel = canvas.closest('.panel');
+                zIndexCounter++;
+                panel.style.zIndex = zIndexCounter;
+                canvas.setPointerCapture(e.pointerId);
+            });
+
+            canvas.addEventListener('pointermove', (e) => {
+                if (!isDrawing) return;
+                const pos = getPos(e);
+                
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = currentPaintColor;
+                ctx.stroke();
+                
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            canvas.addEventListener('pointerup', () => isDrawing = false);
+            canvas.addEventListener('pointercancel', () => isDrawing = false);
+        }
+
+        function initAllCanvases() {
+            document.querySelectorAll('canvas').forEach(canvas => {
+                if (!canvas.dataset.initialized) {
+                    setupCanvas(canvas);
+                    canvas.dataset.initialized = 'true';
+                }
+            });
+        }
+
+        // --- Toolbar Actions ---
+        function setColor(element, color) {
+            currentPaintColor = color;
+            document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function addSlab() {
+            const board = document.getElementById('board');
+            const newPanel = document.createElement('div');
+            newPanel.className = 'panel glass-panel';
+            
+            // Random start position
+            const randomX = Math.floor(Math.random() * 40) + 10;
+            const randomY = Math.floor(Math.random() * 40) + 10;
+            
+            newPanel.style.top = `${randomY}%`;
+            newPanel.style.left = `${randomX}%`;
+            
+            zIndexCounter++;
+            newPanel.style.zIndex = zIndexCounter;
+
+            newPanel.innerHTML = `
+                <div class="drag-handle"></div>
+                <div class="draw-area">
+                    <canvas></canvas>
+                </div>
+            `;
+            
+            board.appendChild(newPanel);
+            
+            // Initialize the new canvas immediately
+            const newCanvas = newPanel.querySelector('canvas');
+            setupCanvas(newCanvas);
+            newCanvas.dataset.initialized = 'true';
+        }
+
+        function clearAllCanvases() {
+            document.querySelectorAll('canvas').forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+        }
+
+        // --- Export to Vector (SVG) Logic ---
+        function exportSVG() {
+            const board = document.getElementById('board');
+            const width = board.offsetWidth;
+            const height = board.offsetHeight;
+            const style = document.querySelector('style').innerHTML;
+            
+            // To preserve drawn canvas data in the HTML export, we must convert 
+            // the live canvas pixels into static base64 image tags temporarily.
+            const clonedBoard = board.cloneNode(true);
+            const originalCanvases = board.querySelectorAll('canvas');
+            const clonedCanvases = clonedBoard.querySelectorAll('canvas');
+            
+            for(let i = 0; i < originalCanvases.length; i++) {
+                const dataUrl = originalCanvases[i].toDataURL();
+                const img = document.createElement('img');
+                img.src = dataUrl;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.pointerEvents = 'none';
+                clonedCanvases[i].parentNode.replaceChild(img, clonedCanvases[i]);
+            }
+
+            const cleanHTML = clonedBoard.innerHTML;
+
+            const svgContent = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+                    <foreignObject width="100%" height="100%">
+                        <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; margin: 0; background-color: #0a0b10; background-image: radial-gradient(ellipse at 20% 80%, rgba(40, 45, 60, 0.5) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(30, 40, 50, 0.5) 0%, transparent 50%), url('data:image/svg+xml,%3Csvg viewBox=\\'0 0 1000 1000\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'noiseFilter\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.005\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23noiseFilter)\\' opacity=\\'0.08\\'/%3E%3C/svg%3E'); background-size: cover; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            <style>${style}</style>
+                            <div class="glass-panel" style="position: relative; width: 100%; height: 100%; border-radius: 40px; box-sizing: border-box; overflow: hidden;">
+                                ${cleanHTML}
+                            </div>
+                        </div>
+                    </foreignObject>
+                </svg>
+            `;
+
+            const blob = new Blob([svgContent], {type: "image/svg+xml;charset=utf-8"});
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'pyrex-canvas-board.svg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Catch window resize to fix canvas scaling
+        window.addEventListener('resize', () => {
+            document.querySelectorAll('canvas').forEach(canvas => {
+                // Save current drawing
+                const data = canvas.toDataURL();
+                // Resize
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                // Restore drawing
+                const img = new Image();
+                img.onload = () => {
+                    canvas.getContext('2d').drawImage(img, 0, 0);
+                    // Re-apply stroke settings
+                    const ctx = canvas.getContext('2d');
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.lineWidth = 4;
+                };
+                img.src = data;
+            });
+        });
+
+        // --- AI Generation Logic (Gemini 3.1 & TTS) ---
+        
+        async function generateImage() {
+            const promptInput = document.getElementById('ai-prompt');
+            const prompt = promptInput.value.trim() || 'A beautiful abstract pyrex glass sculpture';
+            
+            // Create a loading pane
+            const board = document.getElementById('board');
+            const newPanel = document.createElement('div');
+            newPanel.className = 'panel glass-panel';
+            newPanel.style.top = '10%'; newPanel.style.left = '10%';
+            zIndexCounter++; newPanel.style.zIndex = zIndexCounter;
+            newPanel.innerHTML = `
+                <div class="drag-handle"></div>
+                <div class="draw-area" style="display:flex; align-items:center; justify-content:center;">
+                    <div class="loading-spinner"></div>
+                </div>
+            `;
+            board.appendChild(newPanel);
+
+            try {
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+                };
+                const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent?key=';
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                if (base64Data) {
+                    newPanel.querySelector('.draw-area').innerHTML = ''; // clear spinner
+                    newPanel.querySelector('.draw-area').style.background = `url('data:image/png;base64,${base64Data}') center/cover`;
+                } else {
+                    throw new Error("No image data");
+                }
+            } catch (e) {
+                console.error(e);
+                newPanel.querySelector('.draw-area').innerHTML = '<div style="padding: 20px; text-align: center; font-size:14px;">Error generating image.</div>';
+            }
+        }
+
+        // --- WAV Generation Utilities for TTS ---
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        function pcmToWav(pcm16, sampleRate) {
+            const numChannels = 1;
+            const blockAlign = numChannels * 2;
+            const byteRate = sampleRate * blockAlign;
+            const dataSize = pcm16.length * 2;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataSize, true);
+
+            let offset = 44;
+            for (let i = 0; i < pcm16.length; i++, offset += 2) {
+                view.setInt16(offset, pcm16[i], true);
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
+        async function generateAnimation() {
+            const board = document.getElementById('board');
+            const newPanel = document.createElement('div');
+            newPanel.className = 'panel glass-panel';
+            newPanel.style.top = '30%'; newPanel.style.left = '40%';
+            zIndexCounter++; newPanel.style.zIndex = zIndexCounter;
+            newPanel.innerHTML = `
+                <div class="drag-handle"></div>
+                <div class="draw-area" style="display:flex; align-items:center; justify-content:center;">
+                    <div class="loading-spinner"></div>
+                </div>
+            `;
+            board.appendChild(newPanel);
+
+            try {
+                const payload = {
+                    contents: [{ parts: [{ text: "Say enthusiastically: Creating your dynamic six second pyrex canvas animation sequence!" }] }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } } }
+                    },
+                    model: "gemini-2.5-flash-preview-tts"
+                };
+                const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=';
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+
+                if (audioData && mimeType) {
+                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
+                    const pcmData = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmData);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    
+                    const audio = new Audio(audioUrl);
+                    
+                    newPanel.querySelector('.draw-area').classList.add('anim-container');
+                    newPanel.querySelector('.draw-area').innerHTML = `
+                        <span style="font-weight:600; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">▶ Playing Animation</span>
+                    `;
+                    
+                    audio.play();
+                    
+                    setTimeout(() => {
+                        newPanel.querySelector('.draw-area').innerHTML = `
+                            <span style="font-weight:600; opacity: 0.7;">Finished</span>
+                        `;
+                        newPanel.querySelector('.draw-area').classList.remove('anim-container');
+                        newPanel.querySelector('.draw-area').style.background = 'rgba(0,0,0,0.2)';
+                    }, 6000); // 6 second animation end state
+
+                } else {
+                    throw new Error("No audio data");
+                }
+            } catch (e) {
+                console.error(e);
+                newPanel.querySelector('.draw-area').innerHTML = '<div style="padding: 20px; text-align: center; font-size: 14px;">Error generating animation.</div>';
+            }
+        }
+    </script>
+</body>
+</html>
