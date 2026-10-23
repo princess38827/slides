@@ -12,54 +12,47 @@
             --bg-color: #0a0b10;
         }
 
-        body { 
-            margin: 0; 
+        body {
+            margin: 0;
             background-color: var(--bg-color);
             background-image: var(--bg-gradient), var(--bg-noise);
             background-size: cover;
             background-attachment: fixed;
-            color: white; 
-            font-family: 'Inter', sans-serif; 
-            overflow: hidden; 
-            touch-action: none; /* Prevent scroll on touch devices */
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            touch-action: none;
         }
 
-        .screen { 
-            position: absolute; 
-            inset: 0; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            flex-direction: column; 
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s; 
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s;
         }
 
-        /* The Pyrex Glass Aesthetic */
-        .glass-panel { 
+        .glass-panel {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(16px) saturate(180%);
             -webkit-backdrop-filter: blur(16px) saturate(180%);
-            
-            /* Refractive thick borders */
-            border-radius: 32px; /* Highly rounded Pyrex style */
+            border-radius: 32px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-top: 2px solid rgba(255, 255, 255, 0.75);
             border-left: 2px solid rgba(255, 255, 255, 0.5);
             border-right: 1px solid rgba(255, 255, 255, 0.15);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            
-            /* Depth shadows and chromatic aberration for thick glass */
-            box-shadow: 
-                0 30px 60px rgba(0, 0, 0, 0.6), 
-                inset 0 4px 8px rgba(255, 255, 255, 0.5), 
-                inset 4px 4px 10px rgba(0, 255, 255, 0.15), 
-                inset -4px -4px 10px rgba(255, 0, 255, 0.15); 
-            
+            box-shadow:
+                0 30px 60px rgba(0, 0, 0, 0.6),
+                inset 0 4px 8px rgba(255, 255, 255, 0.5),
+                inset 4px 4px 10px rgba(0, 255, 255, 0.15),
+                inset -4px -4px 10px rgba(255, 0, 255, 0.15);
             color: #ffffff;
             box-sizing: border-box;
         }
 
-        /* Lock Screen */
         #lock-screen {
             z-index: 20;
             inset: auto;
@@ -69,10 +62,10 @@
         }
         #lock-screen h2 { margin-top: 0; font-weight: 400; text-align: center; letter-spacing: 1px; }
         #lock-screen p { opacity: 0.6; font-size: 13px; margin-bottom: 40px; text-align: center; letter-spacing: 0.5px; }
-        
-        #unlock-slider { 
-            width: 100%; 
-            accent-color: #fff; 
+
+        #unlock-slider {
+            width: 100%;
+            accent-color: #fff;
             cursor: pointer;
             height: 6px;
             background: rgba(0, 0, 0, 0.3);
@@ -92,13 +85,12 @@
             border: 1px solid rgba(0,0,0,0.1);
         }
 
-        .slide-out { 
-            transform: translateY(-150%) scale(0.9); 
-            opacity: 0; 
-            pointer-events: none; 
+        .slide-out {
+            transform: translateY(-150%) scale(0.9);
+            opacity: 0;
+            pointer-events: none;
         }
 
-        /* Main Board - The Glass Background */
         #main-screen {
             opacity: 0;
             pointer-events: none;
@@ -111,19 +103,17 @@
             transform: scale(1);
         }
 
-        /* The overall glass background board */
-        #board { 
+        #board {
             position: absolute;
-            inset: 20px; /* Leave a gap to see the fluid background behind the glass */
+            inset: 20px;
             border-radius: 40px;
-            padding: 0; 
+            padding: 0;
             overflow: hidden;
         }
 
-        /* Draggable Pyrex Panes */
-        .panel { 
-            position: absolute; 
-            width: 300px; 
+        .panel {
+            position: absolute;
+            width: 300px;
             height: 220px;
             display: flex;
             flex-direction: column;
@@ -131,17 +121,16 @@
             user-select: none;
             transition: transform 0.1s ease-out;
         }
-        
+
         .panel:active {
             transform: scale(1.02);
-            box-shadow: 
-                0 40px 80px rgba(0, 0, 0, 0.8), 
+            box-shadow:
+                0 40px 80px rgba(0, 0, 0, 0.8),
                 inset 0 4px 8px rgba(255, 255, 255, 0.7),
                 inset 4px 4px 10px rgba(0, 255, 255, 0.2),
                 inset -4px -4px 10px rgba(255, 0, 255, 0.2);
         }
 
-        /* Drag Handle to separate dragging from drawing */
         .drag-handle {
             width: 60px;
             height: 8px;
@@ -156,13 +145,12 @@
             cursor: grabbing;
         }
 
-        /* Drawing Canvas Area */
         .draw-area {
             flex-grow: 1;
             width: 100%;
             position: relative;
             border-radius: 20px;
-            background: rgba(0, 0, 0, 0.05); /* Slight tint to show canvas bounds */
+            background: rgba(0, 0, 0, 0.05);
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.05);
@@ -176,7 +164,6 @@
             touch-action: none;
         }
 
-        /* Toolbar Styling */
         .toolbar {
             position: absolute;
             bottom: 30px;
@@ -192,7 +179,7 @@
             width: max-content;
             max-width: 95vw;
         }
-        
+
         .toolbar .btn {
             padding: 10px 20px;
             border-radius: 20px;
@@ -211,7 +198,6 @@
             background: rgba(255,255,255,0.2);
         }
 
-        /* Color Picker Swatches */
         .color-picker {
             display: flex;
             gap: 10px;
@@ -235,82 +221,17 @@
             border-color: #fff;
             box-shadow: 0 0 10px rgba(255,255,255,0.8);
         }
-
-        /* AI Features UI */
-        #ai-prompt {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 10px 16px;
-            color: white;
-            outline: none;
-            font-family: inherit;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-            width: 160px;
-            transition: width 0.3s;
-        }
-        #ai-prompt:focus {
-            width: 220px;
-            border-color: rgba(255,255,255,0.5);
-        }
-        #ai-prompt::placeholder { color: rgba(255,255,255,0.6); }
-
-        #gemini-key {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 10px 16px;
-            color: white;
-            outline: none;
-            width: 180px;
-            font-family: inherit;
-        }
-        #gemini-key::placeholder { color: rgba(255,255,255,0.6); }
-
-        #toolbar-status {
-            font-size: 12px;
-            color: rgba(255,255,255,0.8);
-            min-width: 180px;
-            text-align: center;
-        }
-
-        .loading-spinner {
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(255,255,255,0.2);
-            border-top: 3px solid #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .anim-container {
-            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(45deg, #ff4757, #1e90ff, #ffa502, #2ed573);
-            background-size: 300% 300%;
-            animation: gradientPulse 3s ease-in-out infinite alternate;
-            border-radius: 20px;
-        }
-        @keyframes gradientPulse { 0% {background-position: 0% 50%;} 100% {background-position: 100% 50%;} }
-
     </style>
 </head>
 <body>
-
-    <!-- Lock Screen -->
     <div id="lock-screen" class="screen glass-panel">
         <h2>Pyrex Canvas</h2>
         <p>Slide to unlock workspace</p>
         <input type="range" id="unlock-slider" min="0" max="100" value="0">
     </div>
 
-    <!-- Main Workspace -->
     <div id="main-screen" class="screen">
-        
-        <!-- The Glass Background Board -->
         <div id="board" class="glass-panel">
-            
-            <!-- Default Draggable Pyrex Pane 1 -->
             <div class="panel glass-panel" style="top: 20%; left: 20%;" id="panel-1">
                 <div class="drag-handle"></div>
                 <div class="draw-area">
@@ -318,20 +239,17 @@
                 </div>
             </div>
 
-            <!-- Default Draggable Pyrex Pane 2 -->
             <div class="panel glass-panel" style="top: 40%; left: 50%;" id="panel-2">
                 <div class="drag-handle"></div>
                 <div class="draw-area">
                     <canvas></canvas>
                 </div>
             </div>
-            
         </div>
 
-        <!-- Glass Toolbar -->
         <div class="toolbar glass-panel" style="border-radius: 40px;">
             <div class="btn" onclick="addSlab()">+ Add Pane</div>
-            
+
             <div class="color-picker">
                 <div class="swatch active" style="background: #ffffff;" onclick="setColor(this, '#ffffff')"></div>
                 <div class="swatch" style="background: #ff4757;" onclick="setColor(this, '#ff4757')"></div>
@@ -343,37 +261,15 @@
 
             <div class="btn" onclick="clearAllCanvases()">Clear All</div>
             <div class="btn" onclick="exportSVG()">Save SVG</div>
-            
-            <!-- AI Features -->
-            <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
-            <input type="password" id="gemini-key" placeholder="Gemini API key">
-            <input type="text" id="ai-prompt" placeholder="Image prompt...">
-            <div class="btn" onclick="generateImage()">🖼️ Gen Image</div>
-            <div class="btn" onclick="generateAnimation()">🎬 Gen 6s Anim</div>
-            <div id="toolbar-status">AI features require a valid Gemini key.</div>
         </div>
-
     </div>
 
     <script>
-        // --- Initialization ---
         let currentPaintColor = '#ffffff';
         let zIndexCounter = 10;
         let draggedPanel = null;
         let offsetX = 0, offsetY = 0;
 
-        function setToolbarStatus(message, isError = false) {
-            const statusEl = document.getElementById('toolbar-status');
-            if (!statusEl) return;
-            statusEl.textContent = message;
-            statusEl.style.color = isError ? 'rgba(255, 120, 120, 0.95)' : 'rgba(255,255,255,0.8)';
-        }
-
-        function getGeminiApiKey() {
-            return document.getElementById('gemini-key')?.value.trim() || '';
-        }
-
-        // --- Unlock Logic ---
         const slider = document.getElementById('unlock-slider');
         const lockScreen = document.getElementById('lock-screen');
         const mainScreen = document.getElementById('main-screen');
@@ -382,8 +278,7 @@
             if (e.target.value >= 95) {
                 lockScreen.classList.add('slide-out');
                 mainScreen.classList.add('active');
-                // Initialize canvases once they are visible to get correct dimensions
-                setTimeout(initAllCanvases, 100); 
+                setTimeout(initAllCanvases, 100);
             }
         });
 
@@ -391,16 +286,15 @@
             if (e.target.value < 95) slider.value = 0;
         });
 
-        // --- Dragging Logic ---
         document.addEventListener('pointerdown', (e) => {
             if (e.target.classList.contains('drag-handle')) {
                 const panel = e.target.closest('.panel');
                 draggedPanel = panel;
                 const rect = panel.getBoundingClientRect();
-                
+
                 offsetX = e.clientX - rect.left;
                 offsetY = e.clientY - rect.top;
-                
+
                 zIndexCounter++;
                 panel.style.zIndex = zIndexCounter;
                 e.target.setPointerCapture(e.pointerId);
@@ -409,14 +303,13 @@
 
         document.addEventListener('pointermove', (e) => {
             if (!draggedPanel) return;
-            
+
             const board = document.getElementById('board');
             const boardRect = board.getBoundingClientRect();
-            
+
             let newX = e.clientX - boardRect.left - offsetX;
             let newY = e.clientY - boardRect.top - offsetY;
 
-            // Keep within bounds
             newX = Math.max(0, Math.min(newX, boardRect.width - draggedPanel.offsetWidth));
             newY = Math.max(0, Math.min(newY, boardRect.height - draggedPanel.offsetHeight));
 
@@ -428,9 +321,7 @@
             draggedPanel = null;
         });
 
-        // --- Canvas Drawing Logic ---
         function setupCanvas(canvas) {
-            // Set actual canvas resolution to match CSS display size
             const rect = canvas.parentElement.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height;
@@ -457,7 +348,6 @@
                 const pos = getPos(e);
                 lastX = pos.x;
                 lastY = pos.y;
-                // Bring panel to front when drawing
                 const panel = canvas.closest('.panel');
                 zIndexCounter++;
                 panel.style.zIndex = zIndexCounter;
@@ -467,13 +357,13 @@
             canvas.addEventListener('pointermove', (e) => {
                 if (!isDrawing) return;
                 const pos = getPos(e);
-                
+
                 ctx.beginPath();
                 ctx.moveTo(lastX, lastY);
                 ctx.lineTo(pos.x, pos.y);
                 ctx.strokeStyle = currentPaintColor;
                 ctx.stroke();
-                
+
                 lastX = pos.x;
                 lastY = pos.y;
             });
@@ -491,7 +381,6 @@
             });
         }
 
-        // --- Toolbar Actions ---
         function setColor(element, color) {
             currentPaintColor = color;
             document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
@@ -502,14 +391,13 @@
             const board = document.getElementById('board');
             const newPanel = document.createElement('div');
             newPanel.className = 'panel glass-panel';
-            
-            // Random start position
+
             const randomX = Math.floor(Math.random() * 40) + 10;
             const randomY = Math.floor(Math.random() * 40) + 10;
-            
+
             newPanel.style.top = `${randomY}%`;
             newPanel.style.left = `${randomX}%`;
-            
+
             zIndexCounter++;
             newPanel.style.zIndex = zIndexCounter;
 
@@ -519,10 +407,9 @@
                     <canvas></canvas>
                 </div>
             `;
-            
+
             board.appendChild(newPanel);
-            
-            // Initialize the new canvas immediately
+
             const newCanvas = newPanel.querySelector('canvas');
             setupCanvas(newCanvas);
             newCanvas.dataset.initialized = 'true';
@@ -535,20 +422,17 @@
             });
         }
 
-        // --- Export to Vector (SVG) Logic ---
         function exportSVG() {
             const board = document.getElementById('board');
             const width = board.offsetWidth;
             const height = board.offsetHeight;
             const style = document.querySelector('style').innerHTML;
-            
-            // To preserve drawn canvas data in the HTML export, we must convert 
-            // the live canvas pixels into static base64 image tags temporarily.
+
             const clonedBoard = board.cloneNode(true);
             const originalCanvases = board.querySelectorAll('canvas');
             const clonedCanvases = clonedBoard.querySelectorAll('canvas');
-            
-            for(let i = 0; i < originalCanvases.length; i++) {
+
+            for (let i = 0; i < originalCanvases.length; i++) {
                 const dataUrl = originalCanvases[i].toDataURL();
                 const img = document.createElement('img');
                 img.src = dataUrl;
@@ -559,7 +443,6 @@
             }
 
             const cleanHTML = clonedBoard.innerHTML;
-
             const svgContent = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
                     <foreignObject width="100%" height="100%">
@@ -573,9 +456,8 @@
                 </svg>
             `;
 
-            const blob = new Blob([svgContent], {type: "image/svg+xml;charset=utf-8"});
+            const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
             const url = URL.createObjectURL(blob);
-            
             const link = document.createElement('a');
             link.href = url;
             link.download = 'pyrex-canvas-board.svg';
@@ -585,20 +467,16 @@
             URL.revokeObjectURL(url);
         }
 
-        // Catch window resize to fix canvas scaling
         window.addEventListener('resize', () => {
             document.querySelectorAll('canvas').forEach(canvas => {
-                // Save current drawing
                 const data = canvas.toDataURL();
-                // Resize
                 const rect = canvas.parentElement.getBoundingClientRect();
                 canvas.width = rect.width;
                 canvas.height = rect.height;
-                // Restore drawing
+
                 const img = new Image();
                 img.onload = () => {
                     canvas.getContext('2d').drawImage(img, 0, 0);
-                    // Re-apply stroke settings
                     const ctx = canvas.getContext('2d');
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
@@ -607,185 +485,6 @@
                 img.src = data;
             });
         });
-
-        // --- AI Generation Logic (Gemini 2.0/2.5) ---
-        async function generateImage() {
-            const promptInput = document.getElementById('ai-prompt');
-            const prompt = promptInput.value.trim() || 'A beautiful abstract pyrex glass sculpture';
-            const apiKey = getGeminiApiKey();
-
-            if (!apiKey) {
-                setToolbarStatus('Add a Gemini API key to enable image generation.', true);
-                return;
-            }
-            
-            // Create a loading pane
-            const board = document.getElementById('board');
-            const newPanel = document.createElement('div');
-            newPanel.className = 'panel glass-panel';
-            newPanel.style.top = '10%'; newPanel.style.left = '10%';
-            zIndexCounter++; newPanel.style.zIndex = zIndexCounter;
-            newPanel.innerHTML = `
-                <div class="drag-handle"></div>
-                <div class="draw-area" style="display:flex; align-items:center; justify-content:center;">
-                    <div class="loading-spinner"></div>
-                </div>
-            `;
-            board.appendChild(newPanel);
-
-            try {
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
-                };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                if (!response.ok) {
-                    throw new Error(result?.error?.message || 'Image generation failed.');
-                }
-                const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
-                if (base64Data) {
-                    newPanel.querySelector('.draw-area').innerHTML = ''; // clear spinner
-                    newPanel.querySelector('.draw-area').style.background = `url('data:image/png;base64,${base64Data}') center/cover`;
-                    setToolbarStatus('Image generated successfully.');
-                } else {
-                    throw new Error('No image data was returned.');
-                }
-            } catch (e) {
-                console.error(e);
-                newPanel.querySelector('.draw-area').innerHTML = '<div style="padding: 20px; text-align: center; font-size:14px;">Error generating image.</div>';
-                setToolbarStatus(e.message || 'Image generation failed.', true);
-            }
-        }
-
-        // --- WAV Generation Utilities for TTS ---
-        function base64ToArrayBuffer(base64) {
-            const binaryString = window.atob(base64);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            return bytes.buffer;
-        }
-
-        function writeString(view, offset, string) {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        }
-
-        function pcmToWav(pcm16, sampleRate) {
-            const numChannels = 1;
-            const blockAlign = numChannels * 2;
-            const byteRate = sampleRate * blockAlign;
-            const dataSize = pcm16.length * 2;
-            const buffer = new ArrayBuffer(44 + dataSize);
-            const view = new DataView(buffer);
-
-            writeString(view, 0, 'RIFF');
-            view.setUint32(4, 36 + dataSize, true);
-            writeString(view, 8, 'WAVE');
-            writeString(view, 12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true);
-            view.setUint16(22, numChannels, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, byteRate, true);
-            view.setUint16(32, blockAlign, true);
-            view.setUint16(34, 16, true);
-            writeString(view, 36, 'data');
-            view.setUint32(40, dataSize, true);
-
-            let offset = 44;
-            for (let i = 0; i < pcm16.length; i++, offset += 2) {
-                view.setInt16(offset, pcm16[i], true);
-            }
-
-            return new Blob([view], { type: 'audio/wav' });
-        }
-
-        async function generateAnimation() {
-            const apiKey = getGeminiApiKey();
-            if (!apiKey) {
-                setToolbarStatus('Add a Gemini API key to enable audio animation.', true);
-                return;
-            }
-
-            const board = document.getElementById('board');
-            const newPanel = document.createElement('div');
-            newPanel.className = 'panel glass-panel';
-            newPanel.style.top = '30%'; newPanel.style.left = '40%';
-            zIndexCounter++; newPanel.style.zIndex = zIndexCounter;
-            newPanel.innerHTML = `
-                <div class="drag-handle"></div>
-                <div class="draw-area" style="display:flex; align-items:center; justify-content:center;">
-                    <div class="loading-spinner"></div>
-                </div>
-            `;
-            board.appendChild(newPanel);
-
-            try {
-                const payload = {
-                    contents: [{ parts: [{ text: "Say enthusiastically: Creating your dynamic six second pyrex canvas animation sequence!" }] }],
-                    generationConfig: {
-                        responseModalities: ['AUDIO'],
-                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } } }
-                    }
-                };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                if (!response.ok) {
-                    throw new Error(result?.error?.message || 'Audio generation failed.');
-                }
-                const part = result?.candidates?.[0]?.content?.parts?.[0];
-                const audioData = part?.inlineData?.data;
-                const mimeType = part?.inlineData?.mimeType;
-
-                if (audioData && mimeType) {
-                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
-                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
-                    const pcmData = base64ToArrayBuffer(audioData);
-                    const pcm16 = new Int16Array(pcmData);
-                    const wavBlob = pcmToWav(pcm16, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-                    
-                    const audio = new Audio(audioUrl);
-                    
-                    newPanel.querySelector('.draw-area').classList.add('anim-container');
-                    newPanel.querySelector('.draw-area').innerHTML = `
-                        <span style="font-weight:600; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">▶ Playing Animation</span>
-                    `;
-                    
-                    audio.play();
-                    setToolbarStatus('Animation audio started.');
-                    
-                    setTimeout(() => {
-                        newPanel.querySelector('.draw-area').innerHTML = `
-                            <span style="font-weight:600; opacity: 0.7;">Finished</span>
-                        `;
-                        newPanel.querySelector('.draw-area').classList.remove('anim-container');
-                        newPanel.querySelector('.draw-area').style.background = 'rgba(0,0,0,0.2)';
-                    }, 6000); // 6 second animation end state
-
-                } else {
-                    throw new Error('No audio data was returned.');
-                }
-            } catch (e) {
-                console.error(e);
-                newPanel.querySelector('.draw-area').innerHTML = '<div style="padding: 20px; text-align: center; font-size: 14px;">Error generating animation.</div>';
-                setToolbarStatus(e.message || 'Animation generation failed.', true);
-            }
-        }
     </script>
 </body>
 </html>
